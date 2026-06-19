@@ -376,9 +376,9 @@ def classify_talent(row):
     elif p >= 70 and q < 70:
         return "High Performerss"
     elif p < 70 and q >= 70:
-        return "Question Marks"
+        return "Emerging Talent"
     else:
-        return "Dogs"
+        return "Development Required"
 
 
 employees_filtered["Talent Segment"] = employees_filtered.apply(classify_talent, axis=1)
@@ -656,8 +656,8 @@ with tabs[7]:
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Future Leaders", len(employees_filtered[employees_filtered["Talent Segment"] == "Future Leaders"]))
     c2.metric("High Performerss", len(employees_filtered[employees_filtered["Talent Segment"] == "High Performerss"]))
-    c3.metric("Question Marks", len(employees_filtered[employees_filtered["Talent Segment"] == "Question Marks"]))
-    c4.metric("Dogs", len(employees_filtered[employees_filtered["Talent Segment"] == "Dogs"]))
+    c3.metric("Emerging Talent", len(employees_filtered[employees_filtered["Talent Segment"] == "Emerging Talent"]))
+    c4.metric("Development Required", len(employees_filtered[employees_filtered["Talent Segment"] == "Development Required"]))
 
     fig = px.scatter(
         employees_filtered,
@@ -787,7 +787,7 @@ with tabs[10]:
     st.write("""
     This dashboard supports performance reviews, staffing decisions, training needs analysis,
     incentive design, portfolio risk monitoring, and succession planning.
-    The BCG Talent Segmentation identifies Future Leaders, High Performerss, Question Marks, and Dogs using
+    The BCG Talent Segmentation identifies Future Leaders, High Performerss, Emerging Talent, and Development Required using
     growth, collection achievement, and BAR risk.
     """)
 
