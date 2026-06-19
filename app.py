@@ -372,7 +372,7 @@ def classify_talent(row):
     q = row["Potential Score"]
 
     if p >= 70 and q >= 70:
-        return "Stars"
+        return "Future Leaders"
     elif p >= 70 and q < 70:
         return "Cash Cows"
     elif p < 70 and q >= 70:
@@ -654,7 +654,7 @@ with tabs[7]:
     st.subheader("BCG Talent Segmentation")
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Stars", len(employees_filtered[employees_filtered["Talent Segment"] == "Stars"]))
+    c1.metric("Future Leaders", len(employees_filtered[employees_filtered["Talent Segment"] == "Future Leaders"]))
     c2.metric("Cash Cows", len(employees_filtered[employees_filtered["Talent Segment"] == "Cash Cows"]))
     c3.metric("Question Marks", len(employees_filtered[employees_filtered["Talent Segment"] == "Question Marks"]))
     c4.metric("Dogs", len(employees_filtered[employees_filtered["Talent Segment"] == "Dogs"]))
@@ -787,7 +787,7 @@ with tabs[10]:
     st.write("""
     This dashboard supports performance reviews, staffing decisions, training needs analysis,
     incentive design, portfolio risk monitoring, and succession planning.
-    The BCG Talent Segmentation identifies Stars, Cash Cows, Question Marks, and Dogs using
+    The BCG Talent Segmentation identifies Future Leaders, Cash Cows, Question Marks, and Dogs using
     growth, collection achievement, and BAR risk.
     """)
 
