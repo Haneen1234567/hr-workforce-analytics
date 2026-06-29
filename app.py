@@ -368,20 +368,18 @@ employees_filtered["Future Leaders Index"] = (
 
 
 def classify_talent(row):
-    p = row["Performance Score"]
-    q = row["Potential Score"]
+    score = row["Overall Score"]
 
-    if p >= 70 and q >= 70:
-        return "Future Leaders"
-    elif p >= 70 and q < 70:
-        return "High Performerss"
-    elif p < 70 and q >= 70:
-        return "Emerging Talent"
+    if score >= 120:
+        return "Top Performers"
+    elif score >= 90:
+        return "Growth Potential"
+    elif score >= 40:
+        return "Development Needs"
     else:
-        return "Development Required"
+        return "Performance Review"
 
-
-employees_filtered["Talent Segment"] = employees_filtered.apply(classify_talent, axis=1)
+employees_filtered["Talent Segment"] = employees_filtered.apply(classify_talent, axis=
 
 
 # =========================
