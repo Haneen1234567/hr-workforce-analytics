@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -360,15 +359,32 @@ employees_filtered["Overall Score"] = (
     employees_filtered["BAR Score"] * 0.20
 )
 
-employees_filtered["Future Leaders Index"] = (
+# Scale the score to 150 to match the presentation segmentation model
+employees_filtered["Overall Talent Score"] = employees_filtered["Overall Score"] * 1.5
+
+employees_filtered["Top Performers Index"] = (
     employees_filtered["Growth Score"] * 0.50 +
     employees_filtered["Collection Score"] * 0.30 +
     low_score(employees_filtered["Years of Service"]) * 0.20
 )
 
+TALENT_SEGMENT_ORDER = [
+    "Top Performers",
+    "Growth Potential",
+    "Development Needs",
+    "Performance Review"
+]
+
+TALENT_COLOR_MAP = {
+    "Top Performers": "#22C55E",
+    "Growth Potential": "#FACC15",
+    "Development Needs": "#60A5FA",
+    "Performance Review": "#F87171"
+}
+
 
 def classify_talent(row):
-    score = row["Overall Score"]
+    score = row["Overall Talent Score"]
 
     if score >= 120:
         return "Top Performers"
@@ -379,7 +395,8 @@ def classify_talent(row):
     else:
         return "Performance Review"
 
-employees_filtered["Talent Segment"] = employees_filtered.apply(classify_talent, axis=
+
+employees_filtered["Talent Segment"] = employees_filtered.apply(classify_talent, axis=1)
 
 
 # =========================
@@ -417,9 +434,9 @@ tabs = st.tabs([
     "Collection Analytics",
     "Portfolio Concentration",
     "Risk Indicators",
-    "Talent Segmentation",
+    "Employee Segmentation",
     "Best Overall Employees",
-    "Future Leaders",
+    "Top Performers",
     "Smart Insights",
     "Data Preview"
 ])
@@ -645,30 +662,51 @@ with tabs[6]:
 
 
 # =========================
-# Talent Segmentation
+# Employee Segmentation
 # =========================
 
 with tabs[7]:
-    st.subheader("BCG Talent Segmentation")
+    st.subheader("Employee Segmentation")
+    st.caption("Overall Talent Score = Overall Score scaled to 150. Segments follow the presentation thresholds: Top Performers ≥120, Growth Potential 90–119, Development Needs 40–89, Performance Review <40.")
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Future Leaders", len(employees_filtered[employees_filtered["Talent Segment"] == "Future Leaders"]))
-    c2.metric("High Performerss", len(employees_filtered[employees_filtered["Talent Segment"] == "High Performerss"]))
-    c3.metric("Emerging Talent", len(employees_filtered[employees_filtered["Talent Segment"] == "Emerging Talent"]))
-    c4.metric("Development Required", len(employees_filtered[employees_filtered["Talent Segment"] == "Development Required"]))
+    c1.metric("Top Performers", len(employees_filtered[employees_filtered["Talent Segment"] == "Top Performers"]))
+    c2.metric("Growth Potential", len(employees_filtered[employees_filtered["Talent Segment"] == "Growth Potential"]))
+    c3.metric("Development Needs", len(employees_filtered[employees_filtered["Talent Segment"] == "Development Needs"]))
+    c4.metric("Performance Review", len(employees_filtered[employees_filtered["Talent Segment"] == "Performance Review"]))
 
+    ranked = employees_filtered.sort_values("Overall Talent Score", ascending=False).copy()
+    fig_score = px.bar(
+        ranked,
+        x="Employee",
+        y="Overall Talent Score",
+        color="Talent Segment",
+        category_orders={"Talent Segment": TALENT_SEGMENT_ORDER},
+        color_discrete_map=TALENT_COLOR_MAP,
+        hover_data=["Branch", "Portfolio Growth %", "Collection Achievement %", "BAR", "Overall Score"],
+        title="Overall Talent Score Distribution"
+    )
+    fig_score.update_layout(height=520, xaxis_tickangle=-60, showlegend=True)
+    fig_score.add_hline(y=120, line_dash="dot", line_color="green")
+    fig_score.add_hline(y=90, line_dash="dot", line_color="goldenrod")
+    fig_score.add_hline(y=40, line_dash="dot", line_color="red")
+    st.plotly_chart(fig_score, use_container_width=True)
+
+    st.write("Employee Segmentation Matrix")
     fig = px.scatter(
         employees_filtered,
         x="Potential Score",
         y="Performance Score",
         color="Talent Segment",
         size="Portfolio 2026",
+        category_orders={"Talent Segment": TALENT_SEGMENT_ORDER},
+        color_discrete_map=TALENT_COLOR_MAP,
         hover_name="Employee",
         hover_data=[
             "Branch", "Portfolio Growth %",
-            "Collection Achievement %", "BAR", "Overall Score"
+            "Collection Achievement %", "BAR", "Overall Talent Score"
         ],
-        title="BCG Talent Matrix: Performance vs Potential"
+        title="Employee Segmentation: Performance vs Potential"
     )
     fig.update_layout(height=620)
     st.plotly_chart(fig, use_container_width=True)
@@ -679,8 +717,8 @@ with tabs[7]:
             "Collection Achievement %", "BAR",
             "Growth Score", "Collection Score", "BAR Score",
             "Performance Score", "Potential Score",
-            "Overall Score", "Talent Segment"
-        ]].sort_values("Overall Score", ascending=False),
+            "Overall Score", "Overall Talent Score", "Talent Segment"
+        ]].sort_values("Overall Talent Score", ascending=False),
         use_container_width=True
     )
 
@@ -692,7 +730,7 @@ with tabs[7]:
 with tabs[8]:
     st.subheader("Best Overall Employees")
 
-    st.caption("Overall Score = 40% Growth + 40% Collection Achievement + 20% Low BAR Risk")
+    st.caption("Overall Score = 40% Growth + 40% Collection Achievement + 20% Low BAR Risk | Overall Talent Score is scaled to 150 for segmentation")
 
     if not employees_filtered.empty:
         best_overall = employees_filtered.sort_values("Overall Score", ascending=False).head(1)
@@ -710,7 +748,7 @@ with tabs[8]:
         "Employee", "Branch", "Portfolio Growth %",
         "Collection Achievement %", "BAR",
         "Growth Score", "Collection Score", "BAR Score",
-        "Overall Score", "Talent Segment"
+        "Overall Score", "Overall Talent Score", "Talent Segment"
     ]].sort_values("Overall Score", ascending=False).head(20)
 
     st.write("Top 20 Overall Employees")
@@ -736,22 +774,25 @@ with tabs[8]:
 
 
 # =========================
-# Future Leaders
+# Top Performers
 # =========================
 
 with tabs[9]:
-    st.subheader("Future Leaders Index")
+    st.subheader("Top Performers & Growth Potential")
+    st.caption("This section highlights employees in the strongest segments for recognition, retention, succession planning, coaching, and career growth.")
 
-    st.caption("Future Leaders Index = 50% Growth + 30% Collection Achievement + 20% Lower Years of Service")
-
-    top_future = employees_filtered[[
+    top_segments = employees_filtered[
+        employees_filtered["Talent Segment"].isin(["Top Performers", "Growth Potential"])
+    ][[
         "Employee", "Branch", "Years of Service",
-        "Portfolio Growth %", "Collection Achievement %",
-        "Future Leaders Index", "Talent Segment"
-    ]].sort_values("Future Leaders Index", ascending=False).head(20)
+        "Portfolio Growth %", "Collection Achievement %", "BAR",
+        "Overall Score", "Overall Talent Score", "Talent Segment"
+    ]].sort_values("Overall Talent Score", ascending=False)
 
-    st.dataframe(top_future, use_container_width=True)
-    bar(top_future, "Employee", "Future Leaders Index", "Top 20 Future Leaders", ascending=False)
+    st.dataframe(top_segments, use_container_width=True)
+
+    if not top_segments.empty:
+        bar(top_segments.head(20), "Employee", "Overall Talent Score", "Top 20 Employees by Overall Talent Score", ascending=False)
 
 
 # =========================
@@ -785,7 +826,7 @@ with tabs[10]:
     st.write("""
     This dashboard supports performance reviews, staffing decisions, training needs analysis,
     incentive design, portfolio risk monitoring, and succession planning.
-    The BCG Talent Segmentation identifies Future Leaders, High Performerss, Emerging Talent, and Development Required using
+    The Employee Segmentation model identifies Top Performers, Growth Potential, Development Needs, and Performance Review groups using
     growth, collection achievement, and BAR risk.
     """)
 
